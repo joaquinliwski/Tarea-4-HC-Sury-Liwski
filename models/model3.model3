@@ -347,7 +347,7 @@
         <Option type="List" name="OUTPUT">
           <Option type="Map">
             <Option type="int" name="source" value="2"/>
-            <Option type="QString" name="static_value" value="/Users/camilasury/Desktop/Herramientas computacionales/TP2/raster_stast.gpkg"/>
+            <Option type="QString" name="static_value" value="/Users/camilasury/Desktop/Herramientas computacionales/TP0/raster_stats.csv"/>
           </Option>
         </Option>
       </Option>
@@ -611,7 +611,7 @@
       </Option>
     </Option>
     <Option type="Map" name="native:zonalstatisticsfb_4">
-      <Option type="bool" name="active" value="true"/>
+      <Option type="bool" name="active" value="false"/>
       <Option name="alg_config"/>
       <Option type="QString" name="alg_id" value="native:zonalstatisticsfb"/>
       <Option type="QString" name="color" value=""/>
@@ -716,22 +716,7 @@
   <Option name="modelVariables"/>
   <Option type="QString" name="model_group" value=""/>
   <Option type="QString" name="model_name" value="model3"/>
-  <Option type="Map" name="parameterDefinitions">
-    <Option type="Map" name="native:zonalstatisticsfb_4:pop2000">
-      <Option type="bool" name="create_by_default" value="true"/>
-      <Option type="int" name="data_type" value="-1"/>
-      <Option type="invalid" name="default"/>
-      <Option type="invalid" name="defaultGui"/>
-      <Option type="QString" name="description" value="pop2000"/>
-      <Option type="int" name="flags" value="0"/>
-      <Option type="QString" name="help" value=""/>
-      <Option name="metadata"/>
-      <Option type="QString" name="name" value="native:zonalstatisticsfb_4:pop2000"/>
-      <Option type="QString" name="parameter_type" value="sink"/>
-      <Option type="bool" name="supports_append" value="true"/>
-      <Option type="bool" name="supports_non_file_outputs" value="true"/>
-    </Option>
-  </Option>
+  <Option name="parameterDefinitions"/>
   <Option name="parameterOrder"/>
   <Option name="parameters"/>
 </Option>
