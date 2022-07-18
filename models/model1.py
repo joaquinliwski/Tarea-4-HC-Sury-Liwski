@@ -5,11 +5,11 @@ Group :
 With QGIS : 32208
 """
 
-from qgis.core import QgsProcessing
-from qgis.core import QgsProcessingAlgorithm
-from qgis.core import QgsProcessingMultiStepFeedback
-from qgis.core import QgsProcessingParameterFeatureSink
-import processing
+from qgis.core import QgsProcessing                     #
+from qgis.core import QgsProcessingAlgorithm            # Importamos algunas funciones esppecificas del modulo gis.core
+from qgis.core import QgsProcessingMultiStepFeedback    #
+from qgis.core import QgsProcessingParameterFeatureSink #
+import processing                                       # Imporamos paquete que ayuda procesos con APIs
 
 
 class Model1(QgsProcessingAlgorithm):
