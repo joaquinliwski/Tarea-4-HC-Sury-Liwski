@@ -347,7 +347,7 @@
         <Option type="List" name="OUTPUT">
           <Option type="Map">
             <Option type="int" name="source" value="2"/>
-            <Option type="QString" name="static_value" value="/Users/camilasury/Desktop/Herramientas computacionales/TP0/raster_stats.csv"/>
+            <Option type="QString" name="static_value" value="/Users/camilasury/Desktop/Herramientas computacionales/Python &amp; QGIS/Output/raster_stats.csv"/>
           </Option>
         </Option>
       </Option>
@@ -697,20 +697,7 @@
       </Option>
     </Option>
   </Option>
-  <Option type="Map" name="designerParameterValues">
-    <Option type="QgsProcessingOutputLayerDefinition" name="native:zonalstatisticsfb_4:pop2000">
-      <Option type="Map">
-        <Option type="Map" name="create_options">
-          <Option type="QString" name="fileEncoding" value="System"/>
-        </Option>
-        <Option type="Map" name="sink">
-          <Option type="bool" name="active" value="true"/>
-          <Option type="int" name="type" value="1"/>
-          <Option type="QString" name="val" value="TEMPORARY_OUTPUT"/>
-        </Option>
-      </Option>
-    </Option>
-  </Option>
+  <Option name="designerParameterValues"/>
   <Option name="groupBoxes"/>
   <Option name="help"/>
   <Option name="modelVariables"/>
