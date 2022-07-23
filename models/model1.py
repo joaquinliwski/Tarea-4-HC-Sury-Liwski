@@ -147,3 +147,5 @@ class Model1(QgsProcessingAlgorithm):
 
     def createInstance(self):
         return Model1()
+    
+print('DONE!')
