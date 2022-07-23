@@ -61,7 +61,7 @@ class Model3(QgsProcessingAlgorithm):
             'INPUT': 'Zonal_Statistics_a0941aaf_d5b2_4381_acf6_39f2ca944e5b',
             'LAYER_NAME': '',
             'LAYER_OPTIONS': '',
-            'OUTPUT': outpath,
+            'OUTPUT': outpath + "/raster_stats.csv",
             'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
         }
         outputs['SaveVectorFeaturesToFile'] = processing.run('native:savefeatures', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
