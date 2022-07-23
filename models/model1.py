@@ -1,17 +1,28 @@
 """
 Model exported as python.
-Name : model1
 Group : 
 With QGIS : 32208
 """
-
+#########################################################################################
+#########################################################################################
+# SETUP PREAMBLE FOR RUNNING STANDALONE SCRIPTS.
+# NOT NECESSARY IF YOU ARE RUNNING THIS INSIDE THE QGIS GUI.
+#
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
 from qgis.core import QgsProcessingParameterFeatureSink
 import processing
+#########################################################################################
+#########################################################################################
 
+# paths to inputs and outputs
+mainpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input"
+outpath = "{}/_output".format(mainpath)
 
+langa = mainpath + "/langa/langa.shp"
+
+#class definition
 class Model1(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
@@ -28,8 +39,9 @@ class Model1(QgsProcessingAlgorithm):
         feedback = QgsProcessingMultiStepFeedback(6, model_feedback)
         results = {}
         outputs = {}
-
+        ##################################################################
         # Field calculator clone
+        ##################################################################
         alg_params = {
             'FIELD_LENGTH': 10,
             'FIELD_NAME': 'lnm',
@@ -45,8 +57,9 @@ class Model1(QgsProcessingAlgorithm):
         feedback.setCurrentStep(1)
         if feedback.isCanceled():
             return {}
-
+        ##################################################################
         # Field calculator
+        ##################################################################
         alg_params = {
             'FIELD_LENGTH': 2,
             'FIELD_NAME': 'length',
@@ -62,8 +75,9 @@ class Model1(QgsProcessingAlgorithm):
         feedback.setCurrentStep(2)
         if feedback.isCanceled():
             return {}
-
+        ##################################################################
         # Feature filter
+        ##################################################################
         alg_params = {
             'INPUT': 'Calculated_f6b3724d_dd57_4528_8f50_1523df3951a1',
             'OUTPUT_menor_a_11': parameters['Output_menor_a_11']
@@ -74,10 +88,11 @@ class Model1(QgsProcessingAlgorithm):
         feedback.setCurrentStep(3)
         if feedback.isCanceled():
             return {}
-
+        ##################################################################
         # Fix geometries
+        ##################################################################
         alg_params = {
-            'INPUT': '/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input/langa/langa.shp',
+            'INPUT': langa,
             'OUTPUT': parameters['Fix_geo']
         }
         outputs['FixGeometries'] = processing.run('native:fixgeometries', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
@@ -86,8 +101,9 @@ class Model1(QgsProcessingAlgorithm):
         feedback.setCurrentStep(4)
         if feedback.isCanceled():
             return {}
-
+        ##################################################################
         # Drop field(s)
+        ##################################################################
         alg_params = {
             'COLUMN': ['ID_ISO_A3','ID_ISO_A2','ID_FIPS','NAM_LABEL','NAME_PROP','NAME2','NAM_ANSI','CNT','C1','POP','LMP_POP1','G','LMP_CLASS','FAMILYPROP','FAMILY','langpc_km2','length'],
             'INPUT': 'Calculated_bacce6d8_d082_4205_b803_26b96b98bf17',
@@ -99,8 +115,9 @@ class Model1(QgsProcessingAlgorithm):
         feedback.setCurrentStep(5)
         if feedback.isCanceled():
             return {}
-
+        ##################################################################
         # Add autoincremental field
+        ##################################################################
         alg_params = {
             'FIELD_NAME': 'GID',
             'GROUP_FIELDS': [''],
