@@ -19,7 +19,7 @@ import processing
 #########################################################################################
 # paths to inputs and outputs
 mainpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input"
-outpath = "{}/_output".format(mainpath)
+outpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Output"
 
 adm2 = "gadm41_USA_shp/gadm41_USA_2.shp"
 
