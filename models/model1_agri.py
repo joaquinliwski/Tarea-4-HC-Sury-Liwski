@@ -4,7 +4,11 @@ Name : model1
 Group : 
 With QGIS : 32208
 """
-
+#########################################################################################
+#########################################################################################
+# SETUP PREAMBLE FOR RUNNING STANDALONE SCRIPTS.
+# NOT NECESSARY IF YOU ARE RUNNING THIS INSIDE THE QGIS GUI.
+#
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
@@ -12,8 +16,14 @@ from qgis.core import QgsProcessingParameterRasterDestination
 from qgis.core import QgsProcessingParameterFeatureSink
 from qgis.core import QgsCoordinateReferenceSystem
 import processing
+#########################################################################################
+# paths to inputs and outputs
+mainpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input"
+outpath = "{}/_output".format(mainpath)
 
+adm2 = "gadm41_USA_shp/gadm41_USA_2.shp"
 
+#define class
 class Model1(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
@@ -27,8 +37,9 @@ class Model1(QgsProcessingAlgorithm):
         feedback = QgsProcessingMultiStepFeedback(4, model_feedback)
         results = {}
         outputs = {}
-
+        ##################################################################
         # Warp (reproject)
+        ##################################################################
         alg_params = {
             'DATA_TYPE': 0,  # Use Input Layer Data Type
             'EXTRA': '',
@@ -50,11 +61,12 @@ class Model1(QgsProcessingAlgorithm):
         feedback.setCurrentStep(1)
         if feedback.isCanceled():
             return {}
-
+        ##################################################################
         # Drop field(s)
+        ##################################################################
         alg_params = {
             'COLUMN': ['GID_0','NAME_0','GID_1','GID_2','HASC_2','CC_2','TYPE_2','NL_NAME 2','VARNAME_2','NL_NAME_1','NL_NAME_2',' ENGTYPE_2\n'],
-            'INPUT': '/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input/gadm41_USA_shp/gadm41_USA_2.shp',
+            'INPUT': mainpath + adm2,
             'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
         }
         outputs['DropFields'] = processing.run('native:deletecolumn', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
@@ -62,8 +74,9 @@ class Model1(QgsProcessingAlgorithm):
         feedback.setCurrentStep(2)
         if feedback.isCanceled():
             return {}
-
+        ##################################################################
         # Zonal statistics
+        ##################################################################
         alg_params = {
             'COLUMN_PREFIX': '_',
             'INPUT': 'Incremented_b0012913_9fb5_4aef_970b_37b9b1367c23',
@@ -78,8 +91,9 @@ class Model1(QgsProcessingAlgorithm):
         feedback.setCurrentStep(3)
         if feedback.isCanceled():
             return {}
-
+        ##################################################################
         # Add autoincremental field
+        ##################################################################
         alg_params = {
             'FIELD_NAME': 'cid',
             'GROUP_FIELDS': [''],
@@ -109,3 +123,5 @@ class Model1(QgsProcessingAlgorithm):
 
     def createInstance(self):
         return Model1()
+    
+print('DONE!')
