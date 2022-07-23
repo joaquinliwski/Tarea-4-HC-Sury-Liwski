@@ -4,15 +4,27 @@ Name : model2
 Group : 
 With QGIS : 32208
 """
-
+#########################################################################################
+#########################################################################################
+# SETUP PREAMBLE FOR RUNNING STANDALONE SCRIPTS.
+# NOT NECESSARY IF YOU ARE RUNNING THIS INSIDE THE QGIS GUI.
+#
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
 from qgis.core import QgsProcessingParameterRasterDestination
 from qgis.core import QgsCoordinateReferenceSystem
 import processing
+#########################################################################################
+#########################################################################################
+
+# paths to inputs and outputs
+mainpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input"
+
+suit = "{}/SUIT/suit/hdr.adf".format(mainpath)
 
 
+#class definition
 class Model2(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
@@ -24,12 +36,13 @@ class Model2(QgsProcessingAlgorithm):
         feedback = QgsProcessingMultiStepFeedback(2, model_feedback)
         results = {}
         outputs = {}
-
+        ##################################################################
         # Warp (reproject)
+        ##################################################################
         alg_params = {
             'DATA_TYPE': 0,  # Use Input Layer Data Type
             'EXTRA': '',
-            'INPUT': '/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input/SUIT/suit/hdr.adf',
+            'INPUT': suit,
             'MULTITHREADING': False,
             'NODATA': None,
             'OPTIONS': '',
@@ -47,8 +60,9 @@ class Model2(QgsProcessingAlgorithm):
         feedback.setCurrentStep(1)
         if feedback.isCanceled():
             return {}
-
+        ##################################################################
         # Extract projection
+        ##################################################################        
         alg_params = {
             'INPUT': outputs['WarpReproject']['OUTPUT'],
             'PRJ_FILE_CREATE': True
@@ -70,3 +84,5 @@ class Model2(QgsProcessingAlgorithm):
 
     def createInstance(self):
         return Model2()
+    
+print('DONE!')
