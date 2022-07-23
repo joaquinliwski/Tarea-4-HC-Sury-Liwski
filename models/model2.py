@@ -20,6 +20,7 @@ import processing
 
 # paths to inputs and outputs
 mainpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input"
+outpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Output"
 
 suit = "{}/SUIT/suit/hdr.adf".format(mainpath)
 
