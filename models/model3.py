@@ -37,7 +37,7 @@ class Model3(QgsProcessingAlgorithm):
         results = {}
         outputs = {}
         ##################################################################
-        # Zonal statistics
+        # Zonal statistics Pop1800
         ##################################################################
         alg_params = {
             'COLUMN_PREFIX': 'pop1800',
@@ -102,7 +102,7 @@ class Model3(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
         ##################################################################
-        # Zonal statistics
+        # Zonal statistics Landq
         ##################################################################
         alg_params = {
             'COLUMN_PREFIX': '_',
@@ -119,7 +119,7 @@ class Model3(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
         ##################################################################
-        # Zonal statistics
+        # Zonal statistics Pop1900
         ##################################################################
         alg_params = {
             'COLUMN_PREFIX': 'pop1900',
@@ -136,7 +136,7 @@ class Model3(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
         ##################################################################
-        # Fix geometries
+        # Fix geometries from shapefile
         ##################################################################
         alg_params = {
             'INPUT': admin,
