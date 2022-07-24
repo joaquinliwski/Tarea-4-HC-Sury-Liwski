@@ -1,5 +1,5 @@
 """
-Model exported as python.
+CSV/raster generator with statistics
 Name : model3
 Group : 
 With QGIS : 32208
