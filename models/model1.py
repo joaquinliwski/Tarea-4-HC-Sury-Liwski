@@ -22,7 +22,7 @@ outpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/
 
 langa = mainpath + "/langa/langa.shp"
 
-#class definition
+#model class definition
 class Model1(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
@@ -40,7 +40,7 @@ class Model1(QgsProcessingAlgorithm):
         results = {}
         outputs = {}
         ##################################################################
-        # Field calculator clone
+        # Field calculator clone, create NAME_PROP if less than 11 characters
         ##################################################################
         alg_params = {
             'FIELD_LENGTH': 10,
@@ -58,7 +58,7 @@ class Model1(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
         ##################################################################
-        # Field calculator
+        # Field calculator, length ofcharacters
         ##################################################################
         alg_params = {
             'FIELD_LENGTH': 2,
@@ -76,7 +76,7 @@ class Model1(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
         ##################################################################
-        # Feature filter
+        # Feature filter, less than 11 characters
         ##################################################################
         alg_params = {
             'INPUT': 'Calculated_f6b3724d_dd57_4528_8f50_1523df3951a1',
@@ -116,7 +116,7 @@ class Model1(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
         ##################################################################
-        # Add autoincremental field
+        # Add autoincremental field Id per country
         ##################################################################
         alg_params = {
             'FIELD_NAME': 'GID',
