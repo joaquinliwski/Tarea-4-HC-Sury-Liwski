@@ -39,7 +39,7 @@ class Model2(QgsProcessingAlgorithm):
         results = {}
         outputs = {}
         ##################################################################
-        # Warp (reproject)
+        # Warp (reproject) suitability (hdr.adf)
         ##################################################################
         alg_params = {
             'DATA_TYPE': 0,  # Use Input Layer Data Type
