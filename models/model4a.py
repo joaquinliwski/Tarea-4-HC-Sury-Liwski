@@ -1,17 +1,33 @@
 """
+Number of languages per country 
 Model exported as python.
 Name : model4a
 Group : 
 With QGIS : 32208
 """
+#########################################################################################
+#########################################################################################
+# SETUP PREAMBLE FOR RUNNING STANDALONE SCRIPTS.
+# NOT NECESSARY IF YOU ARE RUNNING THIS INSIDE THE QGIS GUI.
 
+print ("setting up")
+import sys
+import os
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
 from qgis.core import QgsProcessingParameterFeatureSink
 import processing
 
+# paths to inputs and outputs
+print ("setting paths") 
+mainpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input"
+outpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Output"
+wlds = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Output/clean.shp"
+admin = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp"
+outcsv = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Output/languages_by_country.csv"
 
+#class definition 
 class Model4a(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
@@ -25,69 +41,64 @@ class Model4a(QgsProcessingAlgorithm):
         feedback = QgsProcessingMultiStepFeedback(4, model_feedback)
         results = {}
         outputs = {}
-
-        # Fix geometries - wlds
-        alg_params = {
-            'INPUT': '/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Output/clean.shp',
+#########################################################
+# Fix geometries - wlds
+#########################################################  
+print ("fixing geometries - languages")
+        fxgeol_params = {
+            'INPUT': wlds,
             'OUTPUT': parameters['Fixgeo_wlds']
         }
-        outputs['FixGeometriesWlds'] = processing.run('native:fixgeometries', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        outputs['FixGeometriesWlds'] = processing.run('native:fixgeometries', fxgeol_params, context=context, feedback=feedback, is_child_algorithm=True)
         results['Fixgeo_wlds'] = outputs['FixGeometriesWlds']['OUTPUT']
 
         feedback.setCurrentStep(1)
         if feedback.isCanceled():
             return {}
-
-        # Statistics by categories
-        alg_params = {
-            'CATEGORIES_FIELD_NAME': ['ADMIN'],
-            'INPUT': 'Intersection_3bc8e742_0bf3_4a05_bc5f_efe85b48704f',
-            'OUTPUT': '/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Output/languages_by_country.csv',
-            'VALUES_FIELD_NAME': '',
-            'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
-        }
-        outputs['StatisticsByCategories'] = processing.run('qgis:statisticsbycategories', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-
-        feedback.setCurrentStep(2)
-        if feedback.isCanceled():
-            return {}
-
-        # Fix geometries - countries
-        alg_params = {
-            'INPUT': '/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp',
+#########################################################
+# Fix geometries - countries
+#########################################################
+print ("fixing geometries - countries")
+        fxgeoc_direct = {
+            'INPUT': admin,
             'OUTPUT': parameters['Fixgeo_countries']
         }
-        outputs['FixGeometriesCountries'] = processing.run('native:fixgeometries', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        outputs['FixGeometriesCountries'] = processing.run('native:fixgeometries', fxgeoc_direct, context=context, feedback=feedback, is_child_algorithm=True)
         results['Fixgeo_countries'] = outputs['FixGeometriesCountries']['OUTPUT']
 
         feedback.setCurrentStep(3)
         if feedback.isCanceled():
             return {}
-
-        # Intersection
-        alg_params = {
+#########################################################
+# Intersection
+#########################################################
+print ("intersecting data") 
+        intersect_dic = {
             'INPUT': outputs['FixGeometriesWlds']['OUTPUT'],
-            'INPUT_FIELDS': ['GID'],
+            'INPUT_FIELDS': 'GID',
             'OVERLAY': outputs['FixGeometriesCountries']['OUTPUT'],
-            'OVERLAY_FIELDS': ['ADMIN'],
+            'OVERLAY_FIELDS': 'ADMIN',
             'OVERLAY_FIELDS_PREFIX': '',
             'OUTPUT': parameters['Intersection']
         }
-        outputs['Intersection'] = processing.run('native:intersection', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        outputs['Intersection'] = processing.run('native:intersection', intersect_dic, context=context, feedback=feedback, is_child_algorithm=True)
         results['Intersection'] = outputs['Intersection']['OUTPUT']
         return results
 
-    def name(self):
-        return 'model4a'
+#########################################################
+# Statistics by categories
+#########################################################
+print ("statistics by categories")
+        stats_dict = {
+            'CATEGORIES_FIELD_NAME': 'ADMIN',
+            'INPUT': 'Intersection_3bc8e742_0bf3_4a05_bc5f_efe85b48704f',
+            'VALUES_FIELD_NAME': '',
+            'OUTPUT': outcsv
+        }
+        outputs['StatisticsByCategories'] = processing.run('qgis:statisticsbycategories', stats_dict, context=context, feedback=feedback, is_child_algorithm=True)
 
-    def displayName(self):
-        return 'model4a'
+        feedback.setCurrentStep(2)
+        if feedback.isCanceled():
+            return {}
 
-    def group(self):
-        return ''
-
-    def groupId(self):
-        return ''
-
-    def createInstance(self):
-        return Model4a()
+print('DONE!')
