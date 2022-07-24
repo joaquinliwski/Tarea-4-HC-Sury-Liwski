@@ -38,7 +38,7 @@ class Model1(QgsProcessingAlgorithm):
         results = {}
         outputs = {}
         ##################################################################
-        # Warp (reproject)
+        # Warp (reproject) the raster
         ##################################################################
         alg_params = {
             'DATA_TYPE': 0,  # Use Input Layer Data Type
@@ -75,7 +75,7 @@ class Model1(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
         ##################################################################
-        # Zonal statistics
+        # Zonal statistics calculation
         ##################################################################
         alg_params = {
             'COLUMN_PREFIX': '_',
