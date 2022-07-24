@@ -41,7 +41,7 @@ class Model2(QgsProcessingAlgorithm):
         ##################################################################
         # Warp (reproject) suitability (hdr.adf)
         ##################################################################
-        alg_params = {
+        reproject_dict = {
             'DATA_TYPE': 0,  # Use Input Layer Data Type
             'EXTRA': '',
             'INPUT': suit,
@@ -56,7 +56,7 @@ class Model2(QgsProcessingAlgorithm):
             'TARGET_RESOLUTION': None,
             'OUTPUT': parameters['Suitout']
         }
-        outputs['WarpReproject'] = processing.run('gdal:warpreproject', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        outputs['WarpReproject'] = processing.run('gdal:warpreproject', reproject_dict, context=context, feedback=feedback, is_child_algorithm=True)
         results['Suitout'] = outputs['WarpReproject']['OUTPUT']
 
         feedback.setCurrentStep(1)
@@ -65,11 +65,11 @@ class Model2(QgsProcessingAlgorithm):
         ##################################################################
         # Extract projection
         ##################################################################        
-        alg_params = {
+        extract_dict = {
             'INPUT': outputs['WarpReproject']['OUTPUT'],
             'PRJ_FILE_CREATE': True
         }
-        outputs['ExtractProjection'] = processing.run('gdal:extractprojection', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        outputs['ExtractProjection'] = processing.run('gdal:extractprojection', extract_dict, context=context, feedback=feedback, is_child_algorithm=True)
         return results
 
     def name(self):
