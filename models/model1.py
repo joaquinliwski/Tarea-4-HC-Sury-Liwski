@@ -40,86 +40,21 @@ class Model1(QgsProcessingAlgorithm):
         feedback = QgsProcessingMultiStepFeedback(6, model_feedback)
         results = {}
         outputs = {}
-        ##################################################################
-        # Field calculator clone, create NAME_PROP if less than 11 characters
-        ##################################################################
-        alg_params = {
-            'FIELD_LENGTH': 10,
-            'FIELD_NAME': 'lnm',
-            'FIELD_PRECISION': 0,
-            'FIELD_TYPE': 2,  # String
-            'FORMULA': '"NAME_PROP"',
-            'INPUT': 'menor_a_11_eb436653_bc8e_4926_a5b7_d3a3f23de8f4',
-            'OUTPUT': parameters['Field_calc']
-        }
-        outputs['FieldCalculatorClone'] = processing.run('native:fieldcalculator', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Field_calc'] = outputs['FieldCalculatorClone']['OUTPUT']
-
-        feedback.setCurrentStep(1)
-        if feedback.isCanceled():
-            return {}
-        ##################################################################
-        # Field calculator, length ofcharacters
-        ##################################################################
-        alg_params = {
-            'FIELD_LENGTH': 2,
-            'FIELD_NAME': 'length',
-            'FIELD_PRECISION': 0,
-            'FIELD_TYPE': 1,  # Integer
-            'FORMULA': 'length(NAME_PROP)',
-            'INPUT': 'Incremented_db0f2cff_6da4_4320_a14e_ededf985a311',
-            'OUTPUT': parameters['Length']
-        }
-        outputs['FieldCalculator'] = processing.run('native:fieldcalculator', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Length'] = outputs['FieldCalculator']['OUTPUT']
-
-        feedback.setCurrentStep(2)
-        if feedback.isCanceled():
-            return {}
-        ##################################################################
-        # Feature filter, less than 11 characters
-        ##################################################################
-        alg_params = {
-            'INPUT': 'Calculated_f6b3724d_dd57_4528_8f50_1523df3951a1',
-            'OUTPUT_menor_a_11': parameters['Output_menor_a_11']
-        }
-        outputs['FeatureFilter'] = processing.run('native:filter', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Output_menor_a_11'] = outputs['FeatureFilter']['OUTPUT_menor_a_11']
-
-        feedback.setCurrentStep(3)
-        if feedback.isCanceled():
-            return {}
+        
         ##################################################################
         # Fix geometries
         ##################################################################
-        alg_params = {
+        fixgeo_dict = {
             'INPUT': langa,
             'OUTPUT': parameters['Fix_geo']
         }
-        outputs['FixGeometries'] = processing.run('native:fixgeometries', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        outputs['FixGeometries'] = processing.run('native:fixgeometries', fixgeo_dict, context=context, feedback=feedback, is_child_algorithm=True)
         results['Fix_geo'] = outputs['FixGeometries']['OUTPUT']
-
-        feedback.setCurrentStep(4)
-        if feedback.isCanceled():
-            return {}
-        ##################################################################
-        # Drop field(s)
-        ##################################################################
-        alg_params = {
-            'COLUMN': ['ID_ISO_A3','ID_ISO_A2','ID_FIPS','NAM_LABEL','NAME_PROP','NAME2','NAM_ANSI','CNT','C1','POP','LMP_POP1','G','LMP_CLASS','FAMILYPROP','FAMILY','langpc_km2','length'],
-            'INPUT': 'Calculated_bacce6d8_d082_4205_b803_26b96b98bf17',
-            'OUTPUT': parameters['Wldsout']
-        }
-        outputs['DropFields'] = processing.run('native:deletecolumn', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Wldsout'] = outputs['DropFields']['OUTPUT']
-
-        feedback.setCurrentStep(5)
-        if feedback.isCanceled():
-            return {}
+        
         ##################################################################
         # Add autoincremental field Id per country
         ##################################################################
-        alg_params = {
+        add_autoinc_dict = {
             'FIELD_NAME': 'GID',
             'GROUP_FIELDS': [''],
             'INPUT': outputs['FixGeometries']['OUTPUT'],
@@ -130,9 +65,61 @@ class Model1(QgsProcessingAlgorithm):
             'START': 1,
             'OUTPUT': parameters['Autoinc_id']
         }
-        outputs['AddAutoincrementalField'] = processing.run('native:addautoincrementalfield', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        outputs['AddAutoincrementalField'] = processing.run('native:addautoincrementalfield', add_autoinc_dict, context=context, feedback=feedback, is_child_algorithm=True)
         results['Autoinc_id'] = outputs['AddAutoincrementalField']['OUTPUT']
         return results
+        
+        ##################################################################
+        # Field calculator clone, create NAME_PROP if less than 11 characters
+        ##################################################################
+        fieldcalc1_dict = {
+            'FIELD_LENGTH': 10,
+            'FIELD_NAME': 'lnm',
+            'FIELD_PRECISION': 0,
+            'FIELD_TYPE': 2,  # String
+            'FORMULA': '"NAME_PROP"',
+            'INPUT': results['Autoinc_id'],
+            'OUTPUT': parameters['Field_calc']
+        }
+        outputs['FieldCalculatorClone'] = processing.run('native:fieldcalculator', fieldcalc1_dict, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Field_calc'] = outputs['FieldCalculatorClone']['OUTPUT']
+
+        ##################################################################
+        # Field calculator, length ofcharacters
+        ##################################################################
+        fieldcalc2_dict = {
+            'FIELD_LENGTH': 2,
+            'FIELD_NAME': 'length',
+            'FIELD_PRECISION': 0,
+            'FIELD_TYPE': 1,  # Integer
+            'FORMULA': 'length(NAME_PROP)',
+            'INPUT': 'Incremented_db0f2cff_6da4_4320_a14e_ededf985a311',
+            'OUTPUT': parameters['Length']
+        }
+        outputs['FieldCalculator'] = processing.run('native:fieldcalculator', fieldcalc2_dict, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Length'] = outputs['FieldCalculator']['OUTPUT']
+
+        ##################################################################
+        # Feature filter, less than 11 characters
+        ##################################################################
+        featurefilter_dict = {
+            'INPUT': 'Calculated_f6b3724d_dd57_4528_8f50_1523df3951a1',
+            'OUTPUT_menor_a_11': parameters['Output_menor_a_11']
+        }
+        outputs['FeatureFilter'] = processing.run('native:filter', featurefilter_dict, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Output_menor_a_11'] = outputs['FeatureFilter']['OUTPUT_menor_a_11']
+
+        ##################################################################
+        # Drop field(s)
+        ##################################################################
+        dropf_dict = {
+            'COLUMN': ['ID_ISO_A3','ID_ISO_A2','ID_FIPS','NAM_LABEL','NAME_PROP','NAME2','NAM_ANSI','CNT','C1','POP','LMP_POP1','G','LMP_CLASS','FAMILYPROP','FAMILY','langpc_km2','length'],
+            'INPUT': results['Field_calc'],
+            'OUTPUT': parameters['Wldsout']
+        }
+        outputs['DropFields'] = processing.run('native:deletecolumn', dropf_dict, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Wldsout'] = outputs['DropFields']['OUTPUT']
+
 
     def name(self):
         return 'model1'
