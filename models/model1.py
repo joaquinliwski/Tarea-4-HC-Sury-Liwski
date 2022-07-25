@@ -70,21 +70,6 @@ class Model1(QgsProcessingAlgorithm):
         return results
         
         ##################################################################
-        # Field calculator clone, create NAME_PROP if less than 11 characters
-        ##################################################################
-        fieldcalc1_dict = {
-            'FIELD_LENGTH': 10,
-            'FIELD_NAME': 'lnm',
-            'FIELD_PRECISION': 0,
-            'FIELD_TYPE': 2,  # String
-            'FORMULA': '"NAME_PROP"',
-            'INPUT': results['Autoinc_id'],
-            'OUTPUT': parameters['Field_calc']
-        }
-        outputs['FieldCalculatorClone'] = processing.run('native:fieldcalculator', fieldcalc1_dict, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Field_calc'] = outputs['FieldCalculatorClone']['OUTPUT']
-
-        ##################################################################
         # Field calculator, length ofcharacters
         ##################################################################
         fieldcalc2_dict = {
@@ -93,28 +78,43 @@ class Model1(QgsProcessingAlgorithm):
             'FIELD_PRECISION': 0,
             'FIELD_TYPE': 1,  # Integer
             'FORMULA': 'length(NAME_PROP)',
-            'INPUT': 'Incremented_db0f2cff_6da4_4320_a14e_ededf985a311',
+            'INPUT': outputs['AddAutoincrementalField']['OUTPUT'],
             'OUTPUT': parameters['Length']
         }
         outputs['FieldCalculator'] = processing.run('native:fieldcalculator', fieldcalc2_dict, context=context, feedback=feedback, is_child_algorithm=True)
         results['Length'] = outputs['FieldCalculator']['OUTPUT']
-
+        
         ##################################################################
         # Feature filter, less than 11 characters
         ##################################################################
         featurefilter_dict = {
-            'INPUT': 'Calculated_f6b3724d_dd57_4528_8f50_1523df3951a1',
+            'INPUT':  outputs['FieldCalculator']['OUTPUT'],
             'OUTPUT_menor_a_11': parameters['Output_menor_a_11']
         }
         outputs['FeatureFilter'] = processing.run('native:filter', featurefilter_dict, context=context, feedback=feedback, is_child_algorithm=True)
         results['Output_menor_a_11'] = outputs['FeatureFilter']['OUTPUT_menor_a_11']
 
         ##################################################################
+        # Field calculator clone, create NAME_PROP if less than 11 characters
+        ##################################################################
+        fieldcalc1_dict = {
+            'FIELD_LENGTH': 10,
+            'FIELD_NAME': 'lnm',
+            'FIELD_PRECISION': 0,
+            'FIELD_TYPE': 2,  # String
+            'FORMULA': '"NAME_PROP"',
+            'INPUT': outputs['FeatureFilter']['OUTPUT_menor_a_11'],
+            'OUTPUT': parameters['Field_calc']
+        }
+        outputs['FieldCalculatorClone'] = processing.run('native:fieldcalculator', fieldcalc1_dict, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Field_calc'] = outputs['FieldCalculatorClone']['OUTPUT']
+      
+        ##################################################################
         # Drop field(s)
         ##################################################################
         dropf_dict = {
             'COLUMN': ['ID_ISO_A3','ID_ISO_A2','ID_FIPS','NAM_LABEL','NAME_PROP','NAME2','NAM_ANSI','CNT','C1','POP','LMP_POP1','G','LMP_CLASS','FAMILYPROP','FAMILY','langpc_km2','length'],
-            'INPUT': results['Field_calc'],
+            'INPUT': outputs['FieldCalculatorClone']['OUTPUT'],
             'OUTPUT': parameters['Wldsout']
         }
         outputs['DropFields'] = processing.run('native:deletecolumn', dropf_dict, context=context, feedback=feedback, is_child_algorithm=True)
