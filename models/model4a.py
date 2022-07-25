@@ -68,9 +68,9 @@ print ("fixing geometries - countries")
 #########################################################
 print ("intersecting data") 
         intersect_dic = {
-            'INPUT': results['Fixgeo_wlds'],
+            'INPUT': routputs['FixGeometriesWlds']['OUTPUT'],
             'INPUT_FIELDS': 'GID',
-            'OVERLAY': results['Fixgeo_countries'],
+            'OVERLAY': outputs['FixGeometriesCountries']['OUTPUT'],
             'OVERLAY_FIELDS': 'ADMIN',
             'OVERLAY_FIELDS_PREFIX': '',
             'OUTPUT': parameters['Intersection']
@@ -85,7 +85,7 @@ print ("intersecting data")
 print ("statistics by categories")
         stats_dict = {
             'CATEGORIES_FIELD_NAME': 'ADMIN',
-            'INPUT': results['Intersection'],
+            'INPUT': outputs['Intersection']['OUTPUT'],
             'VALUES_FIELD_NAME': '',
             'OUTPUT': outcsv
         }
