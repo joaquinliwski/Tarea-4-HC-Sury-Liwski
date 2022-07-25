@@ -41,7 +41,7 @@ class Model1(QgsProcessingAlgorithm):
         ##################################################################
         # Warp (reproject) the raster
         ##################################################################
-        alg_params = {
+        reproj_dict = {
             'DATA_TYPE': 0,  # Use Input Layer Data Type
             'EXTRA': '',
             'INPUT': suit,
@@ -56,24 +56,24 @@ class Model1(QgsProcessingAlgorithm):
             'TARGET_RESOLUTION': None,
             'OUTPUT': parameters['Agrisuit']
         }
-        outputs['WarpReproject'] = processing.run('gdal:warpreproject', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        outputs['WarpReproject'] = processing.run('gdal:warpreproject', reproj_dict, context=context, feedback=feedback, is_child_algorithm=True)
         results['Agrisuit'] = outputs['WarpReproject']['OUTPUT']
 
         ##################################################################
         # Drop field(s)
         ##################################################################
-        alg_params = {
+        dropf_dict = {
             'COLUMN': ['GID_0','NAME_0','GID_1','GID_2','HASC_2','CC_2','TYPE_2','NL_NAME 2','VARNAME_2','NL_NAME_1','NL_NAME_2',' ENGTYPE_2\n'],
             'INPUT': mainpath + adm2,
             'OUTPUT': QgsProcessing.TEMPORARY_OUTPUT
         }
-        outputs['DropFields'] = processing.run('native:deletecolumn', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        outputs['DropFields'] = processing.run('native:deletecolumn', dropf_dict, context=context, feedback=feedback, is_child_algorithm=True)
 
   
         ##################################################################
         # Add autoincremental field
         ##################################################################
-        alg_params = {
+        addautoinc_dict = {
             'FIELD_NAME': 'cid',
             'GROUP_FIELDS': [''],
             'INPUT': outputs['DropFields']['OUTPUT'],
@@ -84,25 +84,23 @@ class Model1(QgsProcessingAlgorithm):
             'START': 1,
             'OUTPUT': parameters['Counties']
         }
-        outputs['AddAutoincrementalField'] = processing.run('native:addautoincrementalfield', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        outputs['AddAutoincrementalField'] = processing.run('native:addautoincrementalfield', addautoinc_dict, context=context, feedback=feedback, is_child_algorithm=True)
         results['Counties'] = outputs['AddAutoincrementalField']['OUTPUT']
         return results
     
         ##################################################################
         # Zonal statistics calculation
         ##################################################################
-        alg_params = {
+        zonalstats_dict = {
             'COLUMN_PREFIX': '_',
-            'INPUT': 'Incremented_b0012913_9fb5_4aef_970b_37b9b1367c23',
+            'INPUT': outputs['AddAutoincrementalField']['OUTPUT'],
             'INPUT_RASTER': 'OUTPUT_b005dbd3_72d7_4d6d_a897_ced797253c26',
             'RASTER_BAND': 1,
             'STATISTICS': [2],  # Mean
             'OUTPUT': parameters['Zonal']
         }
-        outputs['ZonalStatistics'] = processing.run('native:zonalstatisticsfb', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        outputs['ZonalStatistics'] = processing.run('native:zonalstatisticsfb', zonalstats_dict, context=context, feedback=feedback, is_child_algorithm=True)
         results['Zonal'] = outputs['ZonalStatistics']['OUTPUT']
-
-
 
 
     def name(self):
