@@ -90,7 +90,7 @@ print('fixing geometries - countries')
 print('calculating country centroids')
         centroids_dict = {
             'ALL_PARTS': False,
-            'INPUT': results['Fixgeo_countries'],
+            'INPUT': outputs['FixGeometriesCountries']['OUTPUT'],
             'OUTPUT': parameters['Country_centroids']
         }
         outputs['Centroids'] = processing.run('native:centroids', centroids_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -102,7 +102,7 @@ print('calculating country centroids')
 print ('adding coordinates to centroids')
         addgeoatt1_dict = {
             'CALC_METHOD': 0,  # Layer CRS
-            'INPUT': results['Country_centroids'],
+            'INPUT': outputs['Centroids']['OUTPUT'],
             'OUTPUT': parameters['Centroides_w_coord']
         }
         outputs['AddGeometryAttributes'] = processing.run('qgis:exportaddgeometrycolumns', addgeoat1_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -114,7 +114,7 @@ print ('adding coordinates to centroids')
 print ('dropping unnecessary fields - coast')
         dropf1_dict = {
             'COLUMN': ['scalerank'],
-            'INPUT': results['Fixgeo_coast'],
+            'INPUT': outputs['FixGeometriesCoast']['OUTPUT'],
             'OUTPUT': parameters['Coastout']
         }
         outputs['DropFieldsFixgeo_coast'] = processing.run('native:deletecolumn',  dropf1_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -126,7 +126,7 @@ print ('dropping unnecessary fields - coast')
 print ('dropping unnecessary fields - centroids_w_coord')
         dropf2_dict = {
             'COLUMN': ['featurecla','scalerank','LABELRANK','SOVEREIGNT','SOV_A3','ADM0_DIF','LEVEL','TYPE','TLC','ADM0_A3','GEOU_DIF','GEOUNIT','GU_A3','SU_DIF','SUBUNIT','SU_A3','BRK_DIFF','NAME','NAME_LONG','BRK_A3','BRK_NAME','BRK_GROUP','ABBREV','POSTAL','FORMAL_EN','FORMAL_FR','NAME_CIAWF','NOTE_ADM0','NOTE_BRK','NAME_SORT','NAME_ALT','MAPCOLOR7','MAPCOLOR8','MAPCOLOR9','MAPCOLOR13','POP_EST','POP_RANK','POP_YEAR','GDP_MD','GDP_YEAR','ECONOMY','INCOME_GRP','FIPS_10','ISO_A2','ISO_A2_EH','ISO_A3_EH','ISO_N3','ISO_N3_EH','UN_A3','WB_A2','WB_A3','WOE_ID','WOE_ID_EH','WOE_NOTE','ADM0_ISO','ADM0_DIFF','ADM0_TLC','ADM0_A3_US','ADM0_A3_FR','ADM0_A3_RU','ADM0_A3_ES','ADM0_A3_CN','ADM0_A3_TW','ADM0_A3_IN','ADM0_A3_NP','ADM0_A3_PK','ADM0_A3_DE','ADM0_A3_GB','ADM0_A3_BR','ADM0_A3_IL','ADM0_A3_PS','ADM0_A3_SA','ADM0_A3_EG','ADM0_A3_MA','ADM0_A3_PT','ADM0_A3_AR','ADM0_A3_JP','ADM0_A3_KO','ADM0_A3_VN','ADM0_A3_TR','ADM0_A3_ID','ADM0_A3_PL','ADM0_A3_GR','ADM0_A3_IT','ADM0_A3_NL','ADM0_A3_SE','ADM0_A3_BD','ADM0_A3_UA','ADM0_A3_UN','ADM0_A3_WB','CONTINENT','REGION_UN','SUBREGION','REGION_WB','NAME_LEN','LONG_LEN','ABBREV_LEN','TINY','HOMEPART','MIN_ZOOM','MIN_LABEL','MAX_LABEL','LABEL_X','LABEL_Y','NE_ID','WIKIDATAID','NAME_AR','NAME_BN','NAME_DE','NAME_EN','NAME_ES','NAME_FA','NAME_FR','NAME_EL','NAME_HE','NAME_HI','NAME_HU','NAME_ID','NAME_IT','NAME_JA','NAME_KO','NAME_NL','NAME_PL','NAME_PT','NAME_RU','NAME_SV','NAME_TR','NAME_UK','NAME_UR','NAME_VI','NAME_ZH','NAME_ZHT','FCLASS_ISO','TLC_DIFF','FCLASS_TLC','FCLASS_US','FCLASS_FR','FCLASS_RU','FCLASS_ES','FCLASS_CN','FCLASS_TW','FCLASS_IN','FCLASS_NP','FCLASS_PK','FCLASS_DE','FCLASS_GB','FCLASS_BR','FCLASS_IL','FCLASS_PS','FCLASS_SA','FCLASS_EG','FCLASS_MA','FCLASS_PT','FCLASS_AR','FCLASS_JP','FCLASS_KO','FCLASS_VN','FCLASS_TR','FCLASS_ID','FCLASS_PL','FCLASS_GR','FCLASS_IT','FCLASS_NL','FCLASS_SE','FCLASS_BD','FCLASS_UA'],
-            'INPUT': oresults['Centroides_w_coord'],
+            'INPUT': outputs['AddGeometryAttributes']['OUTPUT'],
             'OUTPUT': parameters['Centroidsout']
         }
         outputs['DropFieldsCentroids_w_coord'] = processing.run('native:deletecolumn', dropf2_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -170,7 +170,7 @@ print('vector distance')
             'FIELD_PRECISION': 3,
             'FIELD_TYPE': 1,  # Integer
             'FORMULA': "attribute($currentfeature, 'cat') -1",
-            'INPUT': results['Nearout'],
+            'INPUT': outputs['Vdistance']['from_output'],
             'OUTPUT': parameters['Nearest_cat_adjust']
         }
         outputs['FieldCalculatorCatAdjust'] = processing.run('native:fieldcalculator', fieldcalc1_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -182,7 +182,7 @@ print('vector distance')
  print('dropping unnecessary fields - nearest')
         dropf3_dict = {
             'COLUMN': ['xcoord',' ycoord'],
-            'INPUT': results['Nearest_cat_adjust'],
+            'INPUT': outputs['FieldCalculatorCatAdjust']['OUTPUT'],
             'OUTPUT': parameters['Nearest_cat_adjust_dropfields']
         }
         outputs['DropFieldsCat_adjust'] = processing.run('native:deletecolumn', dropf3_dict , context=context, feedback=feedback, is_child_algorithm=True)
@@ -197,7 +197,7 @@ print('vector distance')
             'FIELD': 'ISO_A3',
             'FIELDS_TO_COPY': [''],
             'FIELD_2': 'ISO_A3',
-            'INPUT': parameters['Centroidsout'],
+            'INPUT': outputs['DropFieldsCentroids_w_coord']['OUTPUT'],
             'INPUT_2': results['Nearest_cat_adjust_dropfields'],
             'METHOD': 1,  # Take attributes of the first matching feature only (one-to-one)
             'PREFIX': '',
@@ -212,7 +212,7 @@ print('vector distance')
 print('dropping unnecessary fields - nearest and centroids merge')
         dropf4_dict = {
             'COLUMN': ['featurecla','scalerank','LABELRANK','SOVEREIGNT','SOV_A3','ADM0_DIF','LEVEL','TYPE','TLC','ADM0_A3','GEOU_DIF','GEOUNIT','GU_A3','SU_DIF','SUBUNIT','SU_A3','BRK_DIFF','NAME','NAME_LONG','BRK_A3','BRK_NAME','BRK_GROUP','ABBREV','POSTAL','FORMAL_EN','FORMAL_FR','NAME_CIAWF','NOTE_ADM0','NOTE_BRK','NAME_SORT','NAME_ALT','MAPCOLOR7','MAPCOLOR8','MAPCOLOR9','MAPCOLOR13','POP_EST','POP_RANK','POP_YEAR','GDP_MD','GDP_YEAR','ECONOMY','INCOME_GRP','FIPS_10','ISO_A2','ISO_A2_EH','ISO_A3_EH','ISO_N3','ISO_N3_EH','UN_A3','WB_A2','WB_A3','WOE_ID','WOE_ID_EH','WOE_NOTE','ADM0_ISO','ADM0_DIFF','ADM0_TLC','ADM0_A3_US','ADM0_A3_FR','ADM0_A3_RU','ADM0_A3_ES','ADM0_A3_CN','ADM0_A3_TW','ADM0_A3_IN','ADM0_A3_NP','ADM0_A3_PK','ADM0_A3_DE','ADM0_A3_GB','ADM0_A3_BR','ADM0_A3_IL','ADM0_A3_PS','ADM0_A3_SA','ADM0_A3_EG','ADM0_A3_MA','ADM0_A3_PT','ADM0_A3_AR','ADM0_A3_JP','ADM0_A3_KO','ADM0_A3_VN','ADM0_A3_TR','ADM0_A3_ID','ADM0_A3_PL','ADM0_A3_GR','ADM0_A3_IT','ADM0_A3_NL','ADM0_A3_SE','ADM0_A3_BD','ADM0_A3_UA','ADM0_A3_UN','ADM0_A3_WB','CONTINENT','REGION_UN','SUBREGION','REGION_WB','NAME_LEN','LONG_LEN','ABBREV_LEN','TINY','HOMEPART','MIN_ZOOM','MIN_LABEL','MAX_LABEL','LABEL_X','LABEL_Y','NE_ID','WIKIDATAID','NAME_AR','NAME_BN','NAME_DE','NAME_EN','NAME_ES','NAME_FA','NAME_FR','NAME_EL','NAME_HE','NAME_HI','NAME_HU','NAME_ID','NAME_IT','NAME_JA','NAME_KO','NAME_NL','NAME_PL','NAME_PT','NAME_RU','NAME_SV','NAME_TR','NAME_UK','NAME_UR','NAME_VI','NAME_ZH','NAME_ZHT','FCLASS_ISO','TLC_DIFF','FCLASS_TLC','FCLASS_US','FCLASS_FR','FCLASS_RU','FCLASS_ES','FCLASS_CN','FCLASS_TW','FCLASS_IN','FCLASS_NP','FCLASS_PK','FCLASS_DE','FCLASS_GB','FCLASS_BR','FCLASS_IL','FCLASS_PS','FCLASS_SA','FCLASS_EG','FCLASS_MA','FCLASS_PT','FCLASS_AR','FCLASS_JP','FCLASS_KO','FCLASS_VN','FCLASS_TR','FCLASS_ID','FCLASS_PL','FCLASS_GR','FCLASS_IT','FCLASS_NL','FCLASS_SE','FCLASS_BD','FCLASS_UA','ADMIN_2','ISO_A3_2'],
-            'INPUT': results['Centroids_nearest_coast_joined'],
+            'INPUT': outputs['JoinAttributesByFieldValueCentroidsYCoast']['OUTPUT'],
             'OUTPUT': parameters['Centroids_nearest_coast_joined_dropfields']
         }
         outputs['DropFieldsCentroids_coast_joined'] = processing.run('native:deletecolumn', dropf4_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -228,7 +228,7 @@ print('merging the two tables: nearest (adjusted) and distance (this adds countr
             'FIELDS_TO_COPY': None,
             'FIELD_2': 'cat',
             'INPUT': parameter['Distout'],
-            'INPUT_2':  = results['Centroids_nearest_coast_joined_dropfields'],
+            'INPUT_2':  = outputs['DropFieldsCentroids_coast_joined']['OUTPUT'],
             'METHOD': 1,  # Take attributes of the first matching feature only (one-to-one)
             'PREFIX': '',
             'OUTPUT': parameters['Centroids_nearest_coast_distance_joined']
@@ -241,7 +241,7 @@ print('merging the two tables: nearest (adjusted) and distance (this adds countr
 # ################################################################## 
 print('extracting vertices')     
         extrvert_dict = {
-            'INPUT': results['Centroids_nearest_coast_distance_joined'],
+            'INPUT':  outputs['JoinAttributesByFieldValue']['OUTPUT'],
             'OUTPUT': parameters['Extract_vertices']
         }
         outputs['ExtractVertices'] = processing.run('native:extractvertices', extvert_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -253,7 +253,7 @@ print('extracting vertices')
 print('keeping only vertices on coast')
         extratt_dict= {
             'FIELD': 'distance',
-            'INPUT': results['Extract_vertices'],
+            'INPUT': outputs['ExtractVertices']['OUTPUT'],
             'OPERATOR': 2,  # >
             'VALUE': '0',
             'OUTPUT': parameters['Extract_by_attribute']
@@ -271,7 +271,7 @@ print('creating new field: centroid latitude')
             'FIELD_PRECISION': 10,
             'FIELD_TYPE': 0,  # Float
             'FORMULA': "attribute($currentfeature, 'ycoord')",
-            'INPUT': results['Extract_by_attribute'],
+            'INPUT': outputs['ExtractByAttribute']['OUTPUT'],
             'OUTPUT': parameters['Added_field_cent_lat']
         }
         outputs['FieldCalculatorCent_lat'] = processing.run('native:fieldcalculator', fieldcalc2_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -284,7 +284,7 @@ print('creating new field: centroid longitude')
             'FIELD_PRECISION': 10,
             'FIELD_TYPE': 0,  # Float
             'FORMULA': "attribute($currentfeature, 'xcoord')",
-            'INPUT': results['Added_field_cent_lat'],
+            'INPUT': outputs['FieldCalculatorCent_lat']['OUTPUT'],
             'OUTPUT': parameters['Added_field_cent_lon']
         }
         outputs['FieldCalculatorCent_lon'] = processing.run('native:fieldcalculator', fieldcalc3_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -296,7 +296,7 @@ print('creating new field: centroid longitude')
  print('dropping unnecessary fields - cent_lat_lon' )
         dropf5_dict = {
             'COLUMN': ['fid','cat','xcoord','ycoord','fid_2','cat_2','vertex_index','vertex_part','vertex_part','_index','angle'],
-            'INPUT': results['Added_field_cent_lon'],
+            'INPUT': outputs['FieldCalculatorCent_lon']['OUTPUT'],
             'OUTPUT': parameters['Centroids_lat_lon_drop_fields']
         }
         outputs['DropFieldsCent_lat_lon'] = processing.run('native:deletecolumn', dropf5_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -308,7 +308,7 @@ print('creating new field: centroid longitude')
 print('adding co-ordinates to coast points') 
         addgeoatt2_dict = {
             'CALC_METHOD': 0,  # Layer CRS
-            'INPUT': results['Centroids_lat_lon_drop_fields'],
+            'INPUT': outputs['DropFieldsCent_lat_lon']['OUTPUT'],
             'OUTPUT': parameters['Add_geo_coast']
         }
         outputs['AddGeometryAttributes'] = processing.run('qgis:exportaddgeometrycolumns', addgeoatt2_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -324,7 +324,7 @@ print('adding co-ordinates to coast points')
             'FIELD_PRECISION': 10,
             'FIELD_TYPE': 0,  # Float
             'FORMULA': "attribute($currentfeature, 'ycoord')",
-            'INPUT': results['Add_geo_coast'],
+            'INPUT': outputs['AddGeometryAttributes']['OUTPUT'],
             'OUTPUT': parameters['Added_field_coast_lat']
         }
         outputs['FieldCalculatorCoast_lat'] = processing.run('native:fieldcalculator', fieldcalc4_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -337,7 +337,7 @@ print('adding co-ordinates to coast points')
             'FIELD_PRECISION': 10,
             'FIELD_TYPE': 0,  # Float
             'FORMULA': "attribute($currentfeature, 'xcoord')",
-            'INPUT': results['Added_field_coast_lat'],
+            'INPUT': outputs['FieldCalculatorCoast_lat']['OUTPUT'],
             'OUTPUT': parameters['Added_field_coast_lon']
         }
         outputs['FieldCalculatorCoast_lon'] = processing.run('native:fieldcalculator', fieldcalc5_dict, context=context, feedback=feedback, is_child_algorithm=True)
@@ -349,7 +349,7 @@ print('adding co-ordinates to coast points')
 print('dropping unnecessary fields - coast_lon')
         dropf6_dict = {
             'COLUMN': ['xcoord','ycoord'],
-            'INPUT': results['Added_field_coast_lon'],
+            'INPUT': outputs['FieldCalculatorCoast_lon']['OUTPUT'],
             'OUTPUT': csvout
         }
         outputs['DropFieldsCoast_lon'] = processing.run('native:deletecolumn', dropf6_dict, context=context, feedback=feedback, is_child_algorithm=True)
