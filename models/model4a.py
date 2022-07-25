@@ -52,9 +52,6 @@ print ("fixing geometries - languages")
         outputs['FixGeometriesWlds'] = processing.run('native:fixgeometries', fxgeol_params, context=context, feedback=feedback, is_child_algorithm=True)
         results['Fixgeo_wlds'] = outputs['FixGeometriesWlds']['OUTPUT']
 
-        feedback.setCurrentStep(1)
-        if feedback.isCanceled():
-            return {}
 #########################################################
 # Fix geometries - countries
 #########################################################
@@ -66,17 +63,14 @@ print ("fixing geometries - countries")
         outputs['FixGeometriesCountries'] = processing.run('native:fixgeometries', fxgeoc_direct, context=context, feedback=feedback, is_child_algorithm=True)
         results['Fixgeo_countries'] = outputs['FixGeometriesCountries']['OUTPUT']
 
-        feedback.setCurrentStep(3)
-        if feedback.isCanceled():
-            return {}
 #########################################################
 # Intersection
 #########################################################
 print ("intersecting data") 
         intersect_dic = {
-            'INPUT': outputs['FixGeometriesWlds']['OUTPUT'],
+            'INPUT': results['Fixgeo_wlds'],
             'INPUT_FIELDS': 'GID',
-            'OVERLAY': outputs['FixGeometriesCountries']['OUTPUT'],
+            'OVERLAY': results['Fixgeo_countries'],
             'OVERLAY_FIELDS': 'ADMIN',
             'OVERLAY_FIELDS_PREFIX': '',
             'OUTPUT': parameters['Intersection']
@@ -91,14 +85,10 @@ print ("intersecting data")
 print ("statistics by categories")
         stats_dict = {
             'CATEGORIES_FIELD_NAME': 'ADMIN',
-            'INPUT': 'Intersection_3bc8e742_0bf3_4a05_bc5f_efe85b48704f',
+            'INPUT': results['Intersection'],
             'VALUES_FIELD_NAME': '',
             'OUTPUT': outcsv
         }
         outputs['StatisticsByCategories'] = processing.run('qgis:statisticsbycategories', stats_dict, context=context, feedback=feedback, is_child_algorithm=True)
-
-        feedback.setCurrentStep(2)
-        if feedback.isCanceled():
-            return {}
 
 print('DONE!')
