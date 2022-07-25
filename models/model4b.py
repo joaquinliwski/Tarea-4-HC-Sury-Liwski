@@ -1,10 +1,17 @@
 """
+Centroids and distance to coast
 Model exported as python.
 Name : model4b
 Group : 
 With QGIS : 32208
 """
-
+#########################################################################################
+#########################################################################################
+# SETUP PREAMBLE FOR RUNNING STANDALONE SCRIPTS.
+# NOT NECESSARY IF YOU ARE RUNNING THIS INSIDE THE QGIS GUI.
+print('setting up')
+import sys
+import os
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
@@ -12,7 +19,18 @@ from qgis.core import QgsProcessingParameterVectorDestination
 from qgis.core import QgsProcessingParameterFeatureSink
 import processing
 
+# set paths to inputs and outputs
+print('setting paths')
 
+mainpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input"
+outpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Output"
+coast = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input/ne_10m_coastline/ne_10m_admin_0_countries.shp"
+admin = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp"
+
+csvout = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Output/csvout.csv"
+
+
+#class definition
 class Model4b(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
@@ -44,7 +62,91 @@ class Model4b(QgsProcessingAlgorithm):
         feedback = QgsProcessingMultiStepFeedback(21, model_feedback)
         results = {}
         outputs = {}
+# #########################################################
+# # Fix geometries - coast
+# #########################################################
+print('fixing geometries - coast')
+        fixgeo_coast_dict = {
+            'INPUT': coast,
+            'OUTPUT': parameters['Fixgeo_coast']
+        }
+        outputs['FixGeometriesCoast'] = processing.run('native:fixgeometries', fixgeo_coast_dict, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Fixgeo_coast'] = outputs['FixGeometriesCoast']['OUTPUT']
 
+        feedback.setCurrentStep(2)
+        if feedback.isCanceled():
+            return {}
+# #########################################################
+# # Fix geometries - countries
+# #########################################################
+print('fixing geometries - countries')
+        fixgeo_countr_dict = {
+            'INPUT': admin,
+            'OUTPUT': parameters['Fixgeo_countries']
+        }
+        outputs['FixGeometriesCountries'] = processing.run('native:fixgeometries', fixgeo_countr_dict, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Fixgeo_countries'] = outputs['FixGeometriesCountries']['OUTPUT']
+
+        feedback.setCurrentStep(17)
+        if feedback.isCanceled():
+            return {}
+# #########################################################
+# # Centroids
+# #########################################################
+print('calculating country centroids')
+        centroids_dict = {
+            'ALL_PARTS': False,
+            'INPUT': outputs['FixGeometriesCountries']['OUTPUT'],
+            'OUTPUT': parameters['Country_centroids']
+        }
+        outputs['Centroids'] = processing.run('native:centroids', centroids_dict, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Country_centroids'] = outputs['Centroids']['OUTPUT']
+        return results
+# #########################################################
+# # Add geometry attributes
+# #########################################################  
+print ('adding coordinates to centroids')
+        addgeoat1_dict = {
+            'CALC_METHOD': 0,  # Layer CRS
+            'INPUT': 'Centroids_b5150bcb_fac4_4910_83f1_895f92cbba8f',
+            'OUTPUT': parameters['Centroides_w_coord']
+        }
+        outputs['AddGeometryAttributes'] = processing.run('qgis:exportaddgeometrycolumns', addgeoat1_dict, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Centroides_w_coord'] = outputs['AddGeometryAttributes']['OUTPUT']
+
+        feedback.setCurrentStep(12)
+        if feedback.isCanceled():
+            return {}
+# ##################################################################
+# # Drop field(s) - fixgeo_coast
+# ##################################################################    
+print ('dropping unnecessary fields - coast')
+        dropf1_dict = {
+            'COLUMN': ['scalerank'],
+            'INPUT': 'Fixed_geometries_3031a0cb_a8f6_4c1b_aa04_eb69bf5fcafd',
+            'OUTPUT': parameters['Coastout']
+        }
+        outputs['DropFieldsFixgeo_coast'] = processing.run('native:deletecolumn',  dropf1_dict, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Coastout'] = outputs['DropFieldsFixgeo_coast']['OUTPUT']
+
+        feedback.setCurrentStep(8)
+        if feedback.isCanceled():
+            return {}
+# ##################################################################
+# # Drop field(s) - centroids_w_coord
+# ##################################################################    
+        dropf2_dict = {
+            'COLUMN': ['featurecla','scalerank','LABELRANK','SOVEREIGNT','SOV_A3','ADM0_DIF','LEVEL','TYPE','TLC','ADM0_A3','GEOU_DIF','GEOUNIT','GU_A3','SU_DIF','SUBUNIT','SU_A3','BRK_DIFF','NAME','NAME_LONG','BRK_A3','BRK_NAME','BRK_GROUP','ABBREV','POSTAL','FORMAL_EN','FORMAL_FR','NAME_CIAWF','NOTE_ADM0','NOTE_BRK','NAME_SORT','NAME_ALT','MAPCOLOR7','MAPCOLOR8','MAPCOLOR9','MAPCOLOR13','POP_EST','POP_RANK','POP_YEAR','GDP_MD','GDP_YEAR','ECONOMY','INCOME_GRP','FIPS_10','ISO_A2','ISO_A2_EH','ISO_A3_EH','ISO_N3','ISO_N3_EH','UN_A3','WB_A2','WB_A3','WOE_ID','WOE_ID_EH','WOE_NOTE','ADM0_ISO','ADM0_DIFF','ADM0_TLC','ADM0_A3_US','ADM0_A3_FR','ADM0_A3_RU','ADM0_A3_ES','ADM0_A3_CN','ADM0_A3_TW','ADM0_A3_IN','ADM0_A3_NP','ADM0_A3_PK','ADM0_A3_DE','ADM0_A3_GB','ADM0_A3_BR','ADM0_A3_IL','ADM0_A3_PS','ADM0_A3_SA','ADM0_A3_EG','ADM0_A3_MA','ADM0_A3_PT','ADM0_A3_AR','ADM0_A3_JP','ADM0_A3_KO','ADM0_A3_VN','ADM0_A3_TR','ADM0_A3_ID','ADM0_A3_PL','ADM0_A3_GR','ADM0_A3_IT','ADM0_A3_NL','ADM0_A3_SE','ADM0_A3_BD','ADM0_A3_UA','ADM0_A3_UN','ADM0_A3_WB','CONTINENT','REGION_UN','SUBREGION','REGION_WB','NAME_LEN','LONG_LEN','ABBREV_LEN','TINY','HOMEPART','MIN_ZOOM','MIN_LABEL','MAX_LABEL','LABEL_X','LABEL_Y','NE_ID','WIKIDATAID','NAME_AR','NAME_BN','NAME_DE','NAME_EN','NAME_ES','NAME_FA','NAME_FR','NAME_EL','NAME_HE','NAME_HI','NAME_HU','NAME_ID','NAME_IT','NAME_JA','NAME_KO','NAME_NL','NAME_PL','NAME_PT','NAME_RU','NAME_SV','NAME_TR','NAME_UK','NAME_UR','NAME_VI','NAME_ZH','NAME_ZHT','FCLASS_ISO','TLC_DIFF','FCLASS_TLC','FCLASS_US','FCLASS_FR','FCLASS_RU','FCLASS_ES','FCLASS_CN','FCLASS_TW','FCLASS_IN','FCLASS_NP','FCLASS_PK','FCLASS_DE','FCLASS_GB','FCLASS_BR','FCLASS_IL','FCLASS_PS','FCLASS_SA','FCLASS_EG','FCLASS_MA','FCLASS_PT','FCLASS_AR','FCLASS_JP','FCLASS_KO','FCLASS_VN','FCLASS_TR','FCLASS_ID','FCLASS_PL','FCLASS_GR','FCLASS_IT','FCLASS_NL','FCLASS_SE','FCLASS_BD','FCLASS_UA'],
+            'INPUT': 'Added_geom_info_ed34da16_6a79_44ae_835e_fc8475fa2ae5',
+            'OUTPUT': parameters['Centroidsout']
+        }
+        outputs['DropFieldsCentroids_w_coord'] = processing.run('native:deletecolumn', dropf2_dict, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Centroidsout'] = outputs['DropFieldsCentroids_w_coord']['OUTPUT']
+
+        feedback.setCurrentStep(20)
+        if feedback.isCanceled():
+            return {}
+ 
         # Extract vertices
         alg_params = {
             'INPUT': 'Joined_layer_b5b18d93_039f_4db3_b74e_78f13d349148',
@@ -57,17 +159,7 @@ class Model4b(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
 
-        # Fix geometries - coast
-        alg_params = {
-            'INPUT': '/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input/ne_10m_coastline/ne_10m_coastline.shp',
-            'OUTPUT': parameters['Fixgeo_coast']
-        }
-        outputs['FixGeometriesCoast'] = processing.run('native:fixgeometries', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Fixgeo_coast'] = outputs['FixGeometriesCoast']['OUTPUT']
-
-        feedback.setCurrentStep(2)
-        if feedback.isCanceled():
-            return {}
+      
 
         # v.distance
         alg_params = {
@@ -160,18 +252,7 @@ class Model4b(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
 
-        # Drop field(s) - fixgeo_coast
-        alg_params = {
-            'COLUMN': ['scalerank'],
-            'INPUT': 'Fixed_geometries_3031a0cb_a8f6_4c1b_aa04_eb69bf5fcafd',
-            'OUTPUT': parameters['Coastout']
-        }
-        outputs['DropFieldsFixgeo_coast'] = processing.run('native:deletecolumn', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Coastout'] = outputs['DropFieldsFixgeo_coast']['OUTPUT']
-
-        feedback.setCurrentStep(8)
-        if feedback.isCanceled():
-            return {}
+      
 
         # Join attributes by field value - centroids y coast
         alg_params = {
@@ -228,18 +309,7 @@ class Model4b(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
 
-        # Add geometry attributes
-        alg_params = {
-            'CALC_METHOD': 0,  # Layer CRS
-            'INPUT': 'Centroids_b5150bcb_fac4_4910_83f1_895f92cbba8f',
-            'OUTPUT': parameters['Centroides_w_coord']
-        }
-        outputs['AddGeometryAttributes'] = processing.run('qgis:exportaddgeometrycolumns', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Centroides_w_coord'] = outputs['AddGeometryAttributes']['OUTPUT']
-
-        feedback.setCurrentStep(12)
-        if feedback.isCanceled():
-            return {}
+       
 
         # Field calculator - cent_lat
         alg_params = {
@@ -301,18 +371,7 @@ class Model4b(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
 
-        # Fix geometries - countries
-        alg_params = {
-            'INPUT': '/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp',
-            'OUTPUT': parameters['Fixgeo_countries']
-        }
-        outputs['FixGeometriesCountries'] = processing.run('native:fixgeometries', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Fixgeo_countries'] = outputs['FixGeometriesCountries']['OUTPUT']
-
-        feedback.setCurrentStep(17)
-        if feedback.isCanceled():
-            return {}
-
+       
         # Add geometry attributes
         alg_params = {
             'CALC_METHOD': 0,  # Layer CRS
@@ -339,29 +398,9 @@ class Model4b(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
 
-        # Drop field(s) - centroids_w_coord
-        alg_params = {
-            'COLUMN': ['featurecla','scalerank','LABELRANK','SOVEREIGNT','SOV_A3','ADM0_DIF','LEVEL','TYPE','TLC','ADM0_A3','GEOU_DIF','GEOUNIT','GU_A3','SU_DIF','SUBUNIT','SU_A3','BRK_DIFF','NAME','NAME_LONG','BRK_A3','BRK_NAME','BRK_GROUP','ABBREV','POSTAL','FORMAL_EN','FORMAL_FR','NAME_CIAWF','NOTE_ADM0','NOTE_BRK','NAME_SORT','NAME_ALT','MAPCOLOR7','MAPCOLOR8','MAPCOLOR9','MAPCOLOR13','POP_EST','POP_RANK','POP_YEAR','GDP_MD','GDP_YEAR','ECONOMY','INCOME_GRP','FIPS_10','ISO_A2','ISO_A2_EH','ISO_A3_EH','ISO_N3','ISO_N3_EH','UN_A3','WB_A2','WB_A3','WOE_ID','WOE_ID_EH','WOE_NOTE','ADM0_ISO','ADM0_DIFF','ADM0_TLC','ADM0_A3_US','ADM0_A3_FR','ADM0_A3_RU','ADM0_A3_ES','ADM0_A3_CN','ADM0_A3_TW','ADM0_A3_IN','ADM0_A3_NP','ADM0_A3_PK','ADM0_A3_DE','ADM0_A3_GB','ADM0_A3_BR','ADM0_A3_IL','ADM0_A3_PS','ADM0_A3_SA','ADM0_A3_EG','ADM0_A3_MA','ADM0_A3_PT','ADM0_A3_AR','ADM0_A3_JP','ADM0_A3_KO','ADM0_A3_VN','ADM0_A3_TR','ADM0_A3_ID','ADM0_A3_PL','ADM0_A3_GR','ADM0_A3_IT','ADM0_A3_NL','ADM0_A3_SE','ADM0_A3_BD','ADM0_A3_UA','ADM0_A3_UN','ADM0_A3_WB','CONTINENT','REGION_UN','SUBREGION','REGION_WB','NAME_LEN','LONG_LEN','ABBREV_LEN','TINY','HOMEPART','MIN_ZOOM','MIN_LABEL','MAX_LABEL','LABEL_X','LABEL_Y','NE_ID','WIKIDATAID','NAME_AR','NAME_BN','NAME_DE','NAME_EN','NAME_ES','NAME_FA','NAME_FR','NAME_EL','NAME_HE','NAME_HI','NAME_HU','NAME_ID','NAME_IT','NAME_JA','NAME_KO','NAME_NL','NAME_PL','NAME_PT','NAME_RU','NAME_SV','NAME_TR','NAME_UK','NAME_UR','NAME_VI','NAME_ZH','NAME_ZHT','FCLASS_ISO','TLC_DIFF','FCLASS_TLC','FCLASS_US','FCLASS_FR','FCLASS_RU','FCLASS_ES','FCLASS_CN','FCLASS_TW','FCLASS_IN','FCLASS_NP','FCLASS_PK','FCLASS_DE','FCLASS_GB','FCLASS_BR','FCLASS_IL','FCLASS_PS','FCLASS_SA','FCLASS_EG','FCLASS_MA','FCLASS_PT','FCLASS_AR','FCLASS_JP','FCLASS_KO','FCLASS_VN','FCLASS_TR','FCLASS_ID','FCLASS_PL','FCLASS_GR','FCLASS_IT','FCLASS_NL','FCLASS_SE','FCLASS_BD','FCLASS_UA'],
-            'INPUT': 'Added_geom_info_ed34da16_6a79_44ae_835e_fc8475fa2ae5',
-            'OUTPUT': parameters['Centroidsout']
-        }
-        outputs['DropFieldsCentroids_w_coord'] = processing.run('native:deletecolumn', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Centroidsout'] = outputs['DropFieldsCentroids_w_coord']['OUTPUT']
+       
 
-        feedback.setCurrentStep(20)
-        if feedback.isCanceled():
-            return {}
-
-        # Centroids
-        alg_params = {
-            'ALL_PARTS': False,
-            'INPUT': outputs['FixGeometriesCountries']['OUTPUT'],
-            'OUTPUT': parameters['Country_centroids']
-        }
-        outputs['Centroids'] = processing.run('native:centroids', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Country_centroids'] = outputs['Centroids']['OUTPUT']
-        return results
-
+      
     def name(self):
         return 'model4b'
 
