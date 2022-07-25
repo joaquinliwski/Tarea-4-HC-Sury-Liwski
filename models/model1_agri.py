@@ -21,7 +21,7 @@ import processing
 # paths to inputs and outputs
 mainpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input"
 outpath = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Output"
-
+suit = "/Users/camilasury/Desktop/Herramientas computacionales/Python & QGIS/Input/SUIT/suit/hdr.adf"
 adm2 = "gadm41_USA_shp/gadm41_USA_2.shp"
 
 #define class
@@ -44,7 +44,7 @@ class Model1(QgsProcessingAlgorithm):
         alg_params = {
             'DATA_TYPE': 0,  # Use Input Layer Data Type
             'EXTRA': '',
-            'INPUT': 'suit_7fb0217f_082e_430f_be01_aca7c05187d4',
+            'INPUT': suit,
             'MULTITHREADING': False,
             'NODATA': None,
             'OPTIONS': '',
@@ -59,9 +59,6 @@ class Model1(QgsProcessingAlgorithm):
         outputs['WarpReproject'] = processing.run('gdal:warpreproject', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
         results['Agrisuit'] = outputs['WarpReproject']['OUTPUT']
 
-        feedback.setCurrentStep(1)
-        if feedback.isCanceled():
-            return {}
         ##################################################################
         # Drop field(s)
         ##################################################################
@@ -72,26 +69,7 @@ class Model1(QgsProcessingAlgorithm):
         }
         outputs['DropFields'] = processing.run('native:deletecolumn', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
 
-        feedback.setCurrentStep(2)
-        if feedback.isCanceled():
-            return {}
-        ##################################################################
-        # Zonal statistics calculation
-        ##################################################################
-        alg_params = {
-            'COLUMN_PREFIX': '_',
-            'INPUT': 'Incremented_b0012913_9fb5_4aef_970b_37b9b1367c23',
-            'INPUT_RASTER': 'OUTPUT_b005dbd3_72d7_4d6d_a897_ced797253c26',
-            'RASTER_BAND': 1,
-            'STATISTICS': [2],  # Mean
-            'OUTPUT': parameters['Zonal']
-        }
-        outputs['ZonalStatistics'] = processing.run('native:zonalstatisticsfb', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
-        results['Zonal'] = outputs['ZonalStatistics']['OUTPUT']
-
-        feedback.setCurrentStep(3)
-        if feedback.isCanceled():
-            return {}
+  
         ##################################################################
         # Add autoincremental field
         ##################################################################
@@ -109,6 +87,23 @@ class Model1(QgsProcessingAlgorithm):
         outputs['AddAutoincrementalField'] = processing.run('native:addautoincrementalfield', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
         results['Counties'] = outputs['AddAutoincrementalField']['OUTPUT']
         return results
+    
+        ##################################################################
+        # Zonal statistics calculation
+        ##################################################################
+        alg_params = {
+            'COLUMN_PREFIX': '_',
+            'INPUT': 'Incremented_b0012913_9fb5_4aef_970b_37b9b1367c23',
+            'INPUT_RASTER': 'OUTPUT_b005dbd3_72d7_4d6d_a897_ced797253c26',
+            'RASTER_BAND': 1,
+            'STATISTICS': [2],  # Mean
+            'OUTPUT': parameters['Zonal']
+        }
+        outputs['ZonalStatistics'] = processing.run('native:zonalstatisticsfb', alg_params, context=context, feedback=feedback, is_child_algorithm=True)
+        results['Zonal'] = outputs['ZonalStatistics']['OUTPUT']
+
+
+
 
     def name(self):
         return 'model1'
